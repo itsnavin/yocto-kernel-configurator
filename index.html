@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A beginner-friendly Raspberry Pi 5 kernel fragment workbench for a pinned Yocto Scarthgap BSP.">
+  <meta name="theme-color" content="#122a24">
+  <title>Pi Kernel Lab · Yocto Scarthgap</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./src/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#workbench">Skip to configurator</a>
+  <header class="topbar">
+    <a class="brand" href="./"><span class="mark" aria-hidden="true">π</span> Pi Kernel Lab</a>
+    <nav aria-label="Main"><a href="#workbench">Configure</a><a href="#learn">Learn & integrate</a><a href="#reference">Source pins</a></nav>
+    <a class="repo-link" href="https://github.com/itsnavin/yocto-kernel-configurator">GitHub ↗</a>
+  </header>
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">RASPBERRY PI 5 / YOCTO WORKBENCH</p>
+        <h1>A smaller kernel.<br><span>A clearer starting point.</span></h1>
+        <p class="intro">Choose the drivers you need. Understand the tradeoffs. Take a readable kernel fragment into your existing Scarthgap build.</p>
+        <a class="button primary" href="#workbench">Start configuring <span aria-hidden="true">↓</span></a>
+      </div>
+      <aside class="context-card" aria-label="Supported reference">
+        <div class="pill"><span class="dot"></span> PINNED REFERENCE · NOT LIVE DETECTION</div>
+        <dl><dt>Board</dt><dd>Raspberry Pi 5 · 64-bit</dd><dt>Yocto release</dt><dd>5.0.13 · Scarthgap LTS</dd><dt>Kernel provider</dt><dd>linux-raspberrypi</dd><dt>Downstream kernel</dt><dd>6.6.63 · rpi-6.6.y</dd></dl>
+        <p>Scarthgap is not a kernel version. This tool targets one verified BSP snapshot, not every Pi or Yocto build.</p>
+        <a href="#reference">Inspect the exact source pins →</a>
+      </aside>
+    </section>
+    <section class="safety-note" aria-label="Important limitations">
+      <span class="note-icon" aria-hidden="true">!</span>
+      <p><strong>A fragment is a request, not a resolved kernel.</strong> Kconfig dependencies can change your choices. Normalize and compare the final <code>.config</code> in BitBake before building. Nothing runs on or detects your board.</p>
+    </section>
+    <section id="workbench" class="workbench">
+      <div class="section-heading"><div><p class="eyebrow">01 / MAKE YOUR CHOICES</p><h2>Your kernel, thoughtfully configured</h2></div><button id="reset" class="quiet" type="button">Reset to Keep default</button></div>
+      <div class="legend" aria-label="Selection meanings">
+        <p><strong>Keep default</strong> Omit the symbol. Preserve the build's existing policy.</p>
+        <p><strong>Built-in · y</strong> Compile into the kernel. Available before modules load.</p>
+        <p><strong>Module · m</strong> Compile a loadable module. Package and load it separately.</p>
+        <p><strong>Disabled · n</strong> Request “not set”. Dependencies may re-enable it.</p>
+      </div>
+      <div class="workspace-grid">
+        <div>
+          <div class="filter-row"><label for="search">Find a feature<input id="search" type="search" placeholder="Try Wi-Fi, I2C, USB or CONFIG_…"></label><label for="group">Category<select id="group"><option value="">All categories</option></select></label></div>
+          <p id="result-count" class="muted" aria-live="polite"></p>
+          <div id="catalog"></div>
+          <aside class="protected"><h3>Boot essentials stay out of this menu</h3><p>RP1, PCIe, clocks, pinctrl, MMC/SD, USB host, ext4 rootfs and PL011 console are deliberately not offered for disabling. Changing these can make a Pi 5 unbootable or remove recovery access. Even optional drivers can be essential to your own setup.</p></aside>
+        </div>
+        <aside class="output-panel" aria-label="Generated output">
+          <div class="output-title"><span class="eyebrow">02 / REVIEW & EXPORT</span><span id="change-count" class="count">0 changes</span></div>
+          <h2>Your build fragment</h2><p class="muted">Local generation. No uploads, accounts, analytics or external scripts.</p>
+          <label for="file">Preview file<select id="file"></select></label>
+          <pre tabindex="0" aria-label="Generated file preview"><code id="preview"></code></pre>
+          <div class="actions"><button id="copy" type="button">Copy file</button><button id="download-file" type="button">Download file</button></div>
+          <button id="download-all" class="primary wide" type="button">Download layer + guide (.tar)</button>
+          <p class="small">Archive preserves <code>meta-custom/</code> paths. Merge carefully if that layer already exists. Includes the fragment, append, layer.conf, guide and comparison script.</p>
+          <p id="status" role="status" class="status"></p>
+          <details open><summary>Dependencies & cautions <span id="warning-count"></span></summary><p class="small">Advisory only. No dependency resolver or automatic parent changes; only CONFIG_MODULES=y is added for m requests.</p><ul id="warnings"></ul></details>
+        </aside>
+      </div>
+    </section>
+    <section id="compare" class="compare-section">
+      <div><p class="eyebrow">03 / CHECK WHAT SURVIVED</p><h2>Compare with the real result</h2><p>After BitBake normalization, choose the full <code>B/.config</code> from your build. The file stays in this browser. This checks requested values only, including the automatic MODULES=y; it does not validate pins, solve Kconfig or prove a bootable image.</p></div>
+      <div class="compare-card"><label for="config-upload">Final kernel .config (text, up to 5 MiB)<input id="config-upload" type="file" accept=".config,.txt,text/plain"></label><p id="comparison-status" role="status">No final .config loaded.</p><div id="comparison-results"></div><p class="small">“Absent” is not accepted as n: an unknown or invisible symbol may disappear. Resolve all mismatches in your real build.</p></div>
+    </section>
+    <section id="learn">
+      <div class="section-heading"><div><p class="eyebrow">04 / FROM FRAGMENT TO IMAGE</p><h2>Know the next step, not just the next checkbox</h2></div></div>
+      <div class="lesson-grid">
+        <article><span class="step">01</span><h3>Start from a working image</h3><p>Use the pinned Pi 5 Scarthgap setup. Keep recovery media and a known-good image. This is not Raspberry Pi OS, Ubuntu's kernel settings, or a generic linux-yocto guide.</p></article>
+        <article><span class="step">02</span><h3>Integrate, then inspect</h3><p>Add the layer to BBLAYERS. Inspect <code>show-recipes</code>, <code>show-appends</code> and <code>bitbake -e virtual/kernel</code>. Stop if your actual provider, revision or machine differs.</p></article>
+        <article><span class="step">03</span><h3>Let Kconfig decide</h3><p>Inspect <code>listtasks</code>. For this provider use <code>kernel_configme</code> and <code>kernel_configcheck</code>; review logs and compare the final .config. A checkbox cannot resolve selects, conflicts or modular parent limits.</p></article>
+        <article><span class="step">04</span><h3>Build a coherent image</h3><p>Rebuild the kernel and image. Include the modules and needed firmware, userspace and overlays. Keep kernel, modules and device trees matched. Test on real hardware; this app never flashes storage.</p></article>
+      </div>
+      <details class="guide"><summary>Full beginner integration guide & copyable commands</summary><p>These commands are for a supported Linux Yocto host, not Windows PowerShell. Read the steps before running anything.</p><button id="copy-guide" type="button">Copy guide</button><pre tabindex="0"><code id="guide"></code></pre></details>
+      <div class="lesson-grid two">
+        <article><h3>What y, m and n cannot do</h3><p>A built-in driver is part of the kernel. A module is a separate file that must be installed in the image and loaded when needed. A bool symbol is an on/off subfeature and cannot be m. Neither choice installs firmware, accepts a license, changes a device tree, enables a bus in config.txt, or adds BlueZ/ALSA tools.</p></article>
+        <article><h3>Full .config ≠ defconfig ≠ fragment</h3><p>A full .config is the normalized result of many inputs. A defconfig is a starting configuration; this BSP uses bcm2712_defconfig. Your small .cfg fragment requests only changes. Keep default means no request, not “disable”. Do not rename a full .config to .cfg and assume it is a safe minimal fragment.</p></article>
+      </div>
+    </section>
+    <section id="reference" class="reference">
+      <p class="eyebrow">REPRODUCIBLE INPUTS / HONEST BOUNDARIES</p><h2>The source is the contract</h2>
+      <p>The 12 curated symbol names and bool/tristate types were checked against the pinned Raspberry Pi downstream tree. The default recipe uses that tree plus Yocto kernel-cache features and BSP fragments, not vanilla upstream Linux. The inspected recipe/include contain no additional .patch URIs; other layers can add patches.</p>
+      <dl id="pins" class="pins"></dl>
+      <p><strong>Outside scope:</strong> 6.1/6.12 recipes, linux-yocto, other BSP revisions, boards other than Pi 5, arbitrary symbols, dependency solving and live hardware detection. No full BitBake build, image validation or physical Pi boot is claimed. See the repository for exactly which source and browser checks were run.</p>
+      <div class="reference-links"><a href="https://docs.yoctoproject.org/5.0.13/kernel-dev/common.html">Yocto 5.0.13 kernel guide ↗</a><a href="https://www.raspberrypi.com/documentation/computers/configuration.html">Pi firmware & overlays ↗</a><a href="https://itsnavin.github.io/yocto-rpi-builder/">Existing Scarthgap image workbench ↗</a></div>
+    </section>
+  </main>
+  <footer><span>Pi Kernel Lab · Built for learning, not blind flashing.</span><span>Independent project · MIT · <a href="https://github.com/itsnavin/yocto-kernel-configurator">Source & limitations</a></span></footer>
+  <noscript>This configurator needs JavaScript to generate local fragments. The README in the linked repository explains the supported pins and workflow.</noscript>
+</body>
+</html>
